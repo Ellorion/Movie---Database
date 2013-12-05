@@ -3,13 +3,11 @@
 
     Private myDB As New CSQLiteDB
 
+    Private sSectionName As String = ""
     Const iLVMargin As Int16 = 4
 
     Private sDatabasePath As String
-    'Dim sSQLBase As String = "SELECT Name || "" ["" || LastSeen || ""/"" || Count || ""] Rank: "" || Ranking AS Name FROM Entry"
-    'Dim sSQLBase As String = "SELECT Name || "" ["" || LastSeen || ""/"" || Count || ""]"" AS Name, Ranking FROM Entry"
     Dim sSQLBase As String = "SELECT Name, LastSeen, Count, Ranking FROM Entry"
-
 
     Private Sub frmMain_KeyUp(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles Me.KeyUp
         If e.KeyCode = Keys.Escape Then
@@ -34,7 +32,9 @@
             End
         End If
 
-        selectSystem(MainMenu.Items(0).Text.Replace("&", ""))
+        'sSectionName = MainMenu.Items(0).Text.Replace("&", "")
+        'selectSystem(sSectionName)
+        MainMenu.Items(0).PerformClick()
     End Sub
 
     Private Sub selectSystem(sType As String)
@@ -83,8 +83,10 @@
             End If
 
             If e.KeyCode = Keys.I Then
-                Dim sName As String = lvEntry.SelectedItems.Item(0).Text
-                openAnimeInfo(sName)
+                If sSectionName = "Anime" Then
+                    Dim sName As String = lvEntry.SelectedItems.Item(0).Text
+                    openAnimeInfo(sName)
+                End If
                 Exit Sub
             End If
         End If
@@ -168,6 +170,7 @@
 
         If e.Control Then
             If e.KeyCode = Keys.V Then
+                ' remove tags
                 Dim sEntry As String = txtName.Text.Replace("_", " ")
 
                 sEntry = cutText(sEntry, "[", "]")
@@ -183,7 +186,9 @@
             End If
 
             If e.KeyCode = Keys.I Then
-                openAnimeInfo(txtName.Text)
+                If sSectionName = "Anime" Then
+                    openAnimeInfo(txtName.Text)
+                End If
             End If
         End If
     End Sub
@@ -204,26 +209,13 @@
     End Function
 
     Private Sub menuItem_Click(sender As System.Object, e As System.Windows.Forms.ToolStripItemClickedEventArgs) Handles MainMenu.ItemClicked
-        Dim sSectionName As String = e.ClickedItem.Text.Replace("&", "")
+        sSectionName = e.ClickedItem.Text.Replace("&", "")
 
         If sSectionName = "Settings" Then Exit Sub
 
         Me.Text = sSectionName + " - Database"
         selectSystem(sSectionName)
     End Sub
-
-
-    'Private Sub menuAnime_Click(sender As System.Object, e As System.EventArgs) Handles menuAnime.Click
-    '    Dim sSectionName As String = DirectCast(sender, ToolStripMenuItem).Text.Replace("&", "")
-    '    Me.Text = sSectionName + " - Database"
-    '    selectSystem(sSectionName)
-    'End Sub
-
-    'Private Sub menuHentai_Click(sender As System.Object, e As System.EventArgs) Handles menuHentai.Click
-    '    Dim sSectionName As String = DirectCast(sender, ToolStripMenuItem).Text.Replace("&", "")
-    '    Me.Text = sSectionName + " - Database"
-    '    selectSystem(sSectionName)
-    'End Sub
 
     Private Sub txtName_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtName.TextChanged
         searchItem()
