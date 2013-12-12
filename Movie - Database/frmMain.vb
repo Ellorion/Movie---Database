@@ -110,6 +110,11 @@
 
         lvEntry.executeQuery()
 
+        txtName.Text = ""
+        nudLastSeen.Value = 0
+        nudCount.Value = 0
+        nudRanking.Value = 0
+
         If iCurrentIndex < 0 Then Exit Sub
         lvEntry.Items(iCurrentIndex).Selected = True
         lvEntry.Items(iCurrentIndex).Focused = True
@@ -120,8 +125,12 @@
         Dim sEntry As String = txtName.Text.Trim
         If sEntry.Length = 0 Then Exit Sub
 
+        Dim iLastSeen As Int32 = Integer.Parse(nudLastSeen.Value)
+        Dim iCount As Int32 = Integer.Parse(nudCount.Value)
+        Dim iRanking As Int32 = Integer.Parse(nudRanking.Value)
+
         removeItem(sEntry)
-        myDB.addEntry(sEntry, Integer.Parse(nudLastSeen.Value), Integer.Parse(nudCount.Value), Integer.Parse(nudRanking.Value))
+        myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
 
         txtName.Text = ""
         nudLastSeen.Value = 0
