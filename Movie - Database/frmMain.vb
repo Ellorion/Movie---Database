@@ -2,6 +2,7 @@
     Inherits CForm
 
     Private myDB As New CSQLiteDB
+    Private myCFG As New CIniFile("movie-database-config.ini")
 
     Private sSectionName As String = ""
     Const iLVMargin As Int16 = 4
@@ -32,15 +33,32 @@
             End
         End If
 
+        Select Case myCFG.GetValue("filter", "display", "all")
+            Case "complete"
+                ShowCompleteToolStripMenuItem_Click(sender, e)
+            Case "incomplete"
+                ShowIncompleteToolStripMenuItem_Click(sender, e)
+            Case Else
+                ShowallToolStripMenuItem_Click(sender, e)
+        End Select
+
+        If selectSystem(myCFG.GetValue("startup", "database", "Anime")) = False Then
+            MainMenu.Items(0).PerformClick()
+        End If
+
         'sSectionName = MainMenu.Items(0).Text.Replace("&", "")
         'selectSystem(sSectionName)
-        MainMenu.Items(0).PerformClick()
+        'MainMenu.Items(0).PerformClick()
     End Sub
 
-    Private Sub selectSystem(sType As String)
+    Private Function selectSystem(sType As String)
         Dim sDBFile As String = sType + "DB.db"
 
-        If IO.File.Exists(IO.Path.Combine(Application.StartupPath, sDBFile)) = False Then Exit Sub
+        If IO.File.Exists(IO.Path.Combine(Application.StartupPath, sDBFile)) = False Then Return False
+
+        If sType = "Settings" Then Return False
+
+        Me.Text = sType + " - Database"
 
         sDatabasePath = IO.Path.Combine(Application.StartupPath, sDBFile)
 
@@ -52,8 +70,13 @@
         lvEntry.MultiSelect = False
 
         txtName.Text = ""
+
+        myCFG.SetValue("startup", "database", sType)
+
         searchItem()
-    End Sub
+
+        Return True
+    End Function
 
     Private Sub lvEntry_DoubleClick(sender As Object, e As System.EventArgs) Handles lvEntry.DoubleClick
         If lvEntry.SelectedItems.Count <> 1 Then Exit Sub
@@ -156,6 +179,11 @@
         If txtName.Text.Length > 0 Then sSQL += " AND Name LIKE ""%" & txtName.Text & "%"""
 
         lvEntry.executeQuery(sSQL)
+
+        If lvEntry.Items.Count = 0 Then
+            Exit Sub
+        End If
+
         lvEntry.Columns(0).Width = lvEntry.Width - iColumnRankingWidth - iColumnValuesWidth * 2 - 20
 
         lvEntry.Columns(1).Width = iColumnValuesWidth
@@ -220,9 +248,6 @@
     Private Sub menuItem_Click(sender As System.Object, e As System.Windows.Forms.ToolStripItemClickedEventArgs) Handles MainMenu.ItemClicked
         sSectionName = e.ClickedItem.Text.Replace("&", "")
 
-        If sSectionName = "Settings" Then Exit Sub
-
-        Me.Text = sSectionName + " - Database"
         selectSystem(sSectionName)
     End Sub
 
@@ -253,6 +278,8 @@
         ShowCompleteToolStripMenuItem.Checked = False
         ShowIncompleteToolStripMenuItem.Checked = False
 
+        myCFG.SetValue("filter", "display", "all")
+
         searchItem()
     End Sub
 
@@ -261,6 +288,8 @@
         ShowCompleteToolStripMenuItem.Checked = True
         ShowIncompleteToolStripMenuItem.Checked = False
 
+        myCFG.SetValue("filter", "display", "complete")
+
         searchItem()
     End Sub
 
@@ -268,6 +297,8 @@
         ShowallToolStripMenuItem.Checked = False
         ShowCompleteToolStripMenuItem.Checked = False
         ShowIncompleteToolStripMenuItem.Checked = True
+
+        myCFG.SetValue("filter", "display", "incomplete")
 
         searchItem()
     End Sub
