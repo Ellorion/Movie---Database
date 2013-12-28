@@ -59,6 +59,7 @@
         If sType = "Settings" Then Return False
 
         Me.Text = sType + " - Database"
+        sSectionName = sType
 
         sDatabasePath = IO.Path.Combine(Application.StartupPath, sDBFile)
 
