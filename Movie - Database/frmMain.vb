@@ -134,10 +134,7 @@
 
         lvEntry.executeQuery()
 
-        txtName.Text = ""
-        nudLastSeen.Value = 0
-        nudCount.Value = 0
-        nudRanking.Value = 0
+        resetInput()
 
         If iCurrentIndex < 0 Then Exit Sub
         lvEntry.Items(iCurrentIndex).Selected = True
@@ -156,12 +153,17 @@
         removeItem(sEntry)
         myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
 
-        txtName.Text = ""
-        nudLastSeen.Value = 0
-        nudCount.Value = 0
-        nudRanking.Value = 0
+        resetInput()
+
         searchItem()
         txtName.Focus()
+    End Sub
+
+    Private Sub resetInput()
+        txtName.Text = ""
+        nudLastSeen.Value = 0
+        nudCount.Value = 1
+        nudRanking.Value = 0
     End Sub
 
     Private Sub searchItem()
