@@ -179,7 +179,22 @@
             sSQL += " WHERE 1"
         End If
 
-        If txtName.Text.Length > 0 Then sSQL += " AND Name LIKE ""%" & txtName.Text & "%"""
+        If txtName.Text.Length > 0 Then
+            Dim bRankingSearch As Boolean = False
+
+            If txtName.Text.Trim.StartsWith("*") Then
+                Dim sSearch As String = txtName.Text.Trim.Substring(1)
+
+                If IsNumeric(sSearch) Then
+                    bRankingSearch = True
+                    sSQL += " AND Ranking = " & Integer.Parse(sSearch)
+                End If
+            End If
+
+            If Not bRankingSearch Then
+                sSQL += " AND Name LIKE ""%" & txtName.Text & "%"""
+            End If
+        End If
 
         lvEntry.executeQuery(sSQL)
 
