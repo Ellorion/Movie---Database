@@ -15,6 +15,10 @@
             txtName.Text = ""
             searchItem()
         End If
+
+        If e.Control And e.KeyCode = Keys.F Then
+            txtName.Focus()
+        End If
     End Sub
 
     Private Sub frmMain_Load(sender As System.Object, e As System.EventArgs) Handles MyBase.Load
@@ -23,6 +27,7 @@
 
         For Each sFile As String In lstDatabaseFile
             sFile = IO.Path.GetFileName(sFile)
+            ' remove suffix
             sFile = sFile.Remove(sFile.Length - 5)
             MainMenu.Items.Insert(iCounter, MainMenu.Items.Add(sFile))
             iCounter += 1
@@ -45,10 +50,6 @@
         If selectSystem(myCFG.GetValue("startup", "database", "Anime")) = False Then
             MainMenu.Items(0).PerformClick()
         End If
-
-        'sSectionName = MainMenu.Items(0).Text.Replace("&", "")
-        'selectSystem(sSectionName)
-        'MainMenu.Items(0).PerformClick()
     End Sub
 
     Private Function selectSystem(sType As String)
@@ -102,18 +103,25 @@
 
         If e.Control Then
             If e.KeyCode = Keys.Delete Then
-                removeItem(lvEntry.SelectedItems.Item(0).SubItems(0).Text)
-                Exit Sub
-            End If
+                If MessageBox.Show("Do you really want to delete """ + lvEntry.SelectedItems.Item(0).SubItems(0).Text + """?",
+                                   "Deleting...",
+                                   MessageBoxButtons.OKCancel,
+                                   MessageBoxIcon.Question
+                                   ) = Windows.Forms.DialogResult.OK Then
 
-            If e.KeyCode = Keys.I Then
-                If sSectionName = "Anime" Then
-                    Dim sName As String = lvEntry.SelectedItems.Item(0).Text
-                    openAnimeInfo(sName)
+                    removeItem(lvEntry.SelectedItems.Item(0).SubItems(0).Text)
                 End If
                 Exit Sub
             End If
-        End If
+
+                If e.KeyCode = Keys.I Then
+                    If sSectionName = "Anime" Then
+                        Dim sName As String = lvEntry.SelectedItems.Item(0).Text
+                        openAnimeInfo(sName)
+                    End If
+                    Exit Sub
+                End If
+            End If
     End Sub
 
     Private Sub openAnimeInfo(sName As String)
