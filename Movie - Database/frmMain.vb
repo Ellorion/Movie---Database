@@ -8,7 +8,7 @@
     Const iLVMargin As Int16 = 4
 
     Private sDatabasePath As String
-    Dim sSQLBase As String = "SELECT Name, LastSeen, Count, Ranking FROM Entry"
+    Dim sSQLBase As String = "SELECT Name, LastSeen, Count, Ranking, Ended FROM Entry"
 
     Private Sub frmMain_KeyUp(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles Me.KeyUp
         If e.KeyCode = Keys.Escape Then
@@ -17,6 +17,7 @@
         End If
 
         If e.Control And e.KeyCode = Keys.F Then
+            txtName.SelectAll()
             txtName.Focus()
         End If
     End Sub
@@ -103,7 +104,7 @@
 
         If e.Control Then
             If e.KeyCode = Keys.Delete Then
-                If MessageBox.Show("Do you really want to delete """ + lvEntry.SelectedItems.Item(0).SubItems(0).Text + """?",
+                If MessageBox.Show("Do you really want to delete" + vbNewLine + """" + lvEntry.SelectedItems.Item(0).SubItems(0).Text + """?",
                                    "Deleting...",
                                    MessageBoxButtons.OKCancel,
                                    MessageBoxIcon.Question
@@ -114,14 +115,20 @@
                 Exit Sub
             End If
 
-                If e.KeyCode = Keys.I Then
-                    If sSectionName = "Anime" Then
-                        Dim sName As String = lvEntry.SelectedItems.Item(0).Text
-                        openAnimeInfo(sName)
-                    End If
-                    Exit Sub
+            If e.KeyCode = Keys.I Then
+                If sSectionName = "Anime" Then
+                    Dim sName As String = lvEntry.SelectedItems.Item(0).Text
+                    openAnimeInfo(sName)
                 End If
+                Exit Sub
             End If
+
+            If e.KeyCode = Keys.C Then
+                myDB.toggleEnded(lvEntry.SelectedItems.Item(0).Text)
+                lvEntry.executeQuery()
+                Exit Sub
+            End If
+        End If
     End Sub
 
     Private Sub openAnimeInfo(sName As String)
@@ -158,8 +165,11 @@
         Dim iCount As Int32 = Integer.Parse(nudCount.Value)
         Dim iRanking As Int32 = Integer.Parse(nudRanking.Value)
 
-        removeItem(sEntry)
-        myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
+        Dim bAddedEntry As Boolean = myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
+
+        If Not bAddedEntry Then
+            myDB.updateEntry(sEntry, iLastSeen, iCount, iRanking)
+        End If
 
         resetInput()
 
@@ -220,6 +230,8 @@
 
         lvEntry.Columns(3).Width = iColumnRankingWidth
         lvEntry.Columns(3).TextAlign = HorizontalAlignment.Center
+
+        lvEntry.Columns(4).Width = 0
     End Sub
 
     Private Sub addItem_EnterKey(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles nudCount.KeyUp, nudLastSeen.KeyUp, nudRanking.KeyUp
@@ -275,6 +287,8 @@
         sSectionName = e.ClickedItem.Text.Replace("&", "")
 
         selectSystem(sSectionName)
+
+        txtName.Select()
     End Sub
 
     Private Sub txtName_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtName.TextChanged
@@ -295,7 +309,11 @@
 
     Private Sub lvEntry_PostInsertItem(ByRef lviEntry As Object) Handles lvEntry.PostInsertItem
         If lviEntry.SubItems(1).Text = lviEntry.SubItems(2).Text And lviEntry.SubItems(2).Text <> "0" Then
-            lviEntry.ForeColor = Color.Blue
+            If lviEntry.SubItems(4).Text = 1 Then
+                lviEntry.ForeColor = Color.Purple
+            Else
+                lviEntry.ForeColor = Color.Blue
+            End If
         End If
     End Sub
 
