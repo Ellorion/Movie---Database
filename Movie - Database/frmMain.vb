@@ -39,14 +39,14 @@
             End
         End If
 
-        Select Case myCFG.GetValue("filter", "display", "all")
-            Case "complete"
-                ShowCompleteToolStripMenuItem_Click(sender, e)
-            Case "incomplete"
-                ShowIncompleteToolStripMenuItem_Click(sender, e)
-            Case Else
-                ShowallToolStripMenuItem_Click(sender, e)
-        End Select
+        'Select Case myCFG.GetValue("filter", "display", "all")
+        '    Case "complete"
+        '        ShowCompleteToolStripMenuItem_Click(sender, e)
+        '    Case "incomplete"
+        '        ShowIncompleteToolStripMenuItem_Click(sender, e)
+        '    Case Else
+        '        ShowallToolStripMenuItem_Click(sender, e)
+        'End Select
 
         If selectSystem(myCFG.GetValue("startup", "database", "Anime")) = False Then
             MainMenu.Items(0).PerformClick()
@@ -55,15 +55,16 @@
 
     Private Function selectSystem(sType As String)
         Dim sDBFile As String = sType + "DB.db"
-
-        If IO.File.Exists(IO.Path.Combine(Application.StartupPath, sDBFile)) = False Then Return False
+        Dim sPath As String = IO.Path.Combine(Application.StartupPath, sDBFile)
 
         If sType = "Settings" Then Return False
+
+        If IO.File.Exists(sPath) = False Then Return False
 
         Me.Text = sType + " - Database"
         sSectionName = sType
 
-        sDatabasePath = IO.Path.Combine(Application.StartupPath, sDBFile)
+        sDatabasePath = sPath
 
         myDB.CreateDatabase(sDatabasePath, True)
 
@@ -111,6 +112,8 @@
                                    ) = Windows.Forms.DialogResult.OK Then
 
                     removeItem(lvEntry.SelectedItems.Item(0).SubItems(0).Text)
+
+                    txtName.Focus()
                 End If
                 Exit Sub
             End If
@@ -161,14 +164,25 @@
         Dim sEntry As String = txtName.Text.Trim
         If sEntry.Length = 0 Then Exit Sub
 
+        Debug.Print("Exists: " + myDB.checkEntry(sEntry).ToString)
+
         Dim iLastSeen As Int32 = Integer.Parse(nudLastSeen.Value)
         Dim iCount As Int32 = Integer.Parse(nudCount.Value)
         Dim iRanking As Int32 = Integer.Parse(nudRanking.Value)
 
-        Dim bAddedEntry As Boolean = myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
-
-        If Not bAddedEntry Then
+        If myDB.checkEntry(sEntry) Then
             myDB.updateEntry(sEntry, iLastSeen, iCount, iRanking)
+        Else
+            If MessageBox.Show("Adding:" + vbNewLine + """" + sEntry + """?",
+                                "Adding...",
+                                MessageBoxButtons.OKCancel,
+                                MessageBoxIcon.Question,
+                                MessageBoxDefaultButton.Button2
+                                ) <> Windows.Forms.DialogResult.OK Then
+                Return
+            End If
+
+            myDB.addEntry(sEntry, iLastSeen, iCount, iRanking)
         End If
 
         resetInput()

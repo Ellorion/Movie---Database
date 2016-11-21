@@ -19,6 +19,12 @@
         Return bResult
     End Function
 
+    Public Function checkEntry(sEntry As String) As Boolean
+        Dim entryCount As Integer
+        Me.Query("SELECT Name FROM Entry WHERE Name = """ + sEntry + """", entryCount)
+        Return (entryCount > 0)
+    End Function
+
     Public Function addEntry(sEntry As String, iLastSeen As Integer, iCount As Integer, iRanking As Integer) As Boolean
         Return Me.Query("INSERT INTO Entry (Name, LastSeen, Count, Ranking) VALUES (""" & sEntry & """, " & iLastSeen.ToString & ", " & iCount.ToString & ", " & iRanking.ToString & ")").Length = 0
     End Function
